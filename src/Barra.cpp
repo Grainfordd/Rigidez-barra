@@ -1,10 +1,13 @@
 #include "../include/Barra.hpp"
 
-Barra::Barra(Nodo nodo1, Nodo nodo2) {
+Barra::Barra(Nodo nodo1, Nodo nodo2, double E_in, double A_in) {
     xf = nodo2.x;
     yf = nodo2.y;
     xn = nodo1.x;
     yn = nodo1.y;
+	E = E_in;
+	A = A_in;
+	EA = E*A;
 
     nodos[0] = nodo1.num_nodo;
     nodos[1] = nodo2.num_nodo;
@@ -23,12 +26,12 @@ Barra::Barra(Nodo nodo1, Nodo nodo2) {
         {-1, 1}
     };
 
-    k_loc = k_loc / largo;
+    k_loc = E*A * k_loc / largo;
     k_glob = T.t() * k_loc * T;
 }
 
 double Barra::fuerza_interna(arma::vec desp){
 	vec fuerza = k_loc * T * desp;
-	return std::abs(fuerza(0));
+	return fuerza(1);
 }
 

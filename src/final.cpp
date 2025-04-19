@@ -39,7 +39,9 @@ int main(void){
 		Nodo nodo1 = nodos[((int)elementos_info.row(i)[0]) - 1];
 		Nodo nodo2 = nodos[((int)elementos_info.row(i)[1]) - 1];
 
-		barras[i] = Barra(nodo1, nodo2);
+		double E = elementos_info.row(i)[2];
+		double A = elementos_info.row(i)[3];
+		barras[i] = Barra(nodo1, nodo2, E, A);
 	}
 	//--------------------------------------------------------------------------
 	
@@ -68,12 +70,7 @@ int main(void){
 	for (int i = 0 ; i < num_elementos ; i++){
 		K_global += barras[i].k_glob;
 	}
-	
-	double E, A;
-	E = 1;
-	A = 1;
 
-	K_global = E*A * K_global;
 	// ----------------------------------------------------------------------------------
 	
 	// ---------------------------- Reducción matriz global ----------------------------
@@ -128,6 +125,7 @@ int main(void){
 	
 
 	vec fuerza_int = zeros(num_elementos);
+	vec esfuerzos = zeros(num_elementos);
 
 	for (int i = 0; i < num_elementos ; i++){
 		vec desp_loc = zeros(4);
@@ -147,6 +145,10 @@ int main(void){
 		double fuerza_loc = barras[i].fuerza_interna(desp_loc);
 		fuerza_int(i) = fuerza_loc;
 	}
+
+	for (int i = 0; i < num_elementos; i++){
+		esfuerzos(i) = fuerza_int(i) / barras[i].A;
+	}
 	
 	
 	// --------------------------------------------------------------------------------
@@ -163,8 +165,13 @@ int main(void){
 	cout << "-------- Fuerzas internas----------" << endl;
 	fuerza_int.print();
 	cout << "------------------" << endl;
+	cout << "-------- esfuerzos  ---------------" << endl;
+	esfuerzos.print();
+	cout << "------------------" << endl;
+
 
 	escribir_resultado(disp, "disp");
 	escribir_resultado(F, "fuerzas");
-	escribir_esf(fuerza_int);
+	escribir_esf(esfuerzos);
+	escribir_vtk(nodos, barras, disp, esfuerzos, "resultados.vtk", num_nodos, num_elementos);
 }

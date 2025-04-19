@@ -1,5 +1,6 @@
 #include "../include/utilidades.hpp"
 #include <iostream>
+#include <string>
 
 using namespace arma;
 using namespace std;
@@ -12,6 +13,59 @@ void mostrar_barras(Barra barras[], int num_elementos) {
         cout << "-------------------------------------------------------------------------" << endl;
     }
     cout << "********************************************************************************" << endl;
+}
+
+void escribir_vtk(Nodo nodos[], Barra elementos[], vec disp, vec esf, string nombre_archivo, int num_nodos, int num_elem){
+	 
+	ofstream archivo("../" + nombre_archivo);
+
+	if (archivo.is_open()){
+		archivo << "# vtk DataFile Version 2.0\n"; // Línea que siempre tiene que tener hvk
+		archivo << "Armadura\n";
+		archivo << "ASCII\n";
+		archivo << "DATASET UNSTRUCTURED_GRID\n\n";
+
+		// -------------- Nodos ----------------------
+		archivo << "POINTS " << num_nodos << " float\n";
+		for (int i = 0; i < num_nodos ; i++){
+			archivo << nodos[i].x << " " << nodos[i].y << " 0\n";
+		}
+
+		archivo << "\n";
+		archivo << "CELLS " << num_elem << " " << num_elem*3 << "\n";
+		for (int i = 0; i < num_elem ; i++) {
+			archivo << "2 " << elementos[i].nodos[0]-1 << " " << elementos[i].nodos[1]-1 << "\n";
+		}
+
+		archivo << "\n";
+		archivo << "CELL_TYPES " << num_elem << "\n";
+		for (int i = 0 ;i < num_elem ; i++){
+			archivo << "3\n";
+		}
+
+		archivo << "\n";
+		archivo << "POINT_DATA " << num_nodos << "\n";
+		archivo << "VECTORS Desplazamiento float\n";
+		for (int i = 0; i < disp.n_elem ; i++){
+			if (i%2 == 0){
+				archivo << disp[i] << " ";
+			}
+			else {
+				archivo << disp[i] << " 0\n";
+			}
+		}
+
+		archivo << "\n\n";
+		archivo << "CELL_DATA " << num_elem << "\n";
+		archivo << "SCALARS Esfuerzo float 1\n";
+		archivo << "LOOKUP_TABLE default\n";
+
+		for (int i = 0; i < num_elem; i++) {
+			archivo << esf(i) << "\n";
+		}
+
+	}
+
 }
 void escribir_esf(vec esf){
 	ofstream archivo("../esfuerzos.txt");
