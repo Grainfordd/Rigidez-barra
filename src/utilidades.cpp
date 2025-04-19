@@ -14,6 +14,27 @@ void mostrar_barras(Barra barras[], int num_elementos) {
     cout << "********************************************************************************" << endl;
 }
 
+void escribir_resultado(vec datos, string dato){
+	string nombre_archivo = "../res_" + dato + ".txt";
+	ofstream archivo(nombre_archivo);
+
+	if (archivo.is_open()){
+		archivo << "Nodo \t x \t y\n";
+		int j = 1;
+		for (int i = 0; i < datos.n_elem; i++){
+			if (i % 2 == 0) {
+				archivo << (j) << "\t\t"<<datos(i) << "\t";
+				j++;
+			}
+			else{
+				archivo << datos(i) << "\n";
+			}
+		}
+
+	}
+
+}
+
 mat eliminar_fila(mat A, int fila) {
     int largo = A.n_rows;
     if (fila == 0) return A.rows(fila + 1, largo - 1);

@@ -10,10 +10,18 @@ using namespace arma;
 
 int main(void){
 	// ------------------------ Lectura de datos -------------------------------
+
+	string nodos_file = "../data/nodos.txt";
+	string elementos_file = "../data/elementos.txt";
+	string fuerzas_file = "../data/fuerzas.txt";
+	string disp_file = "../data/disp.txt";
+
+
+
 	mat nodos_info;
 	mat elementos_info;
-	nodos_info.load("data/nodos.txt");
-	elementos_info.load("data/elementos.txt");
+	nodos_info.load(nodos_file);
+	elementos_info.load(elementos_file);
 
 	// Asignación de nodos 
 	int num_nodos = nodos_info.n_rows;
@@ -70,7 +78,7 @@ int main(void){
 	
 	// ---------------------------- Reducción matriz global ----------------------------
 	mat nodos_disp;
-	nodos_disp.load("data/disp.txt");
+	nodos_disp.load(disp_file);
 
 	vec disp = vectorise(nodos_disp.t());
 	mat K_red = K_global;
@@ -92,7 +100,7 @@ int main(void){
 
 
 	mat f_read;
-	f_read.load("data/fuerzas.txt");
+	f_read.load(fuerzas_file);
 
 	vec f_red = vectorise(f_read.t());
 	f_red.print();
@@ -113,17 +121,18 @@ int main(void){
 		}
 	}
 
-	cout << "----------- Desp reducido ---------------------" << endl;
-	disp_red.print();
-	cout << "------------------------------------------------" << endl;
-	cout << "----------- Fuer reducido ---------------------" << endl;
-	f_red.print();
-	cout << "------------------------------------------------" << endl;
-
-
 	mat F = K_global * disp;
 	cout << "-------- Fuerzas ----------" << endl;
 	F.print();
 	cout << "------------------" << endl;
+
+	cout << "-------- Desplazamientos ----------" << endl;
+	disp.print();
+	cout << "------------------" << endl;
+
+	escribir_resultado(disp, "disp");
+	escribir_resultado(F, "fuerzas");
+	cout << "Hola\n";
+	cout << "Hola\n";
 
 }

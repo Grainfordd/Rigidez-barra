@@ -1,8 +1,8 @@
 CXX = g++
 LDFLAGS = -larmadillo
 
-SRC = $(wildcard src/*.cpp)
 OBJ = $(SRC:src/%.cpp=build/%.o)
+SRC = $(wildcard src/*.cpp)
 EXE = programa
 
 all: $(EXE)
