@@ -8,10 +8,23 @@ void mostrar_barras(Barra barras[], int num_elementos) {
     cout << "********************************************************************************" << endl;
     for (int i = 0 ; i < num_elementos ; i++) {
         cout << "------------------------ Miembro " << i + 1 << " ----------------------------------------" << endl;
-        barras[i].k.print();
+        barras[i].k_glob.print();
         cout << "-------------------------------------------------------------------------" << endl;
     }
     cout << "********************************************************************************" << endl;
+}
+void escribir_esf(vec esf){
+	ofstream archivo("../esfuerzos.txt");
+
+	if (archivo.is_open()){
+		archivo << "Elemento \t x\n";
+
+		for (int i = 0 ; i < esf.n_elem ; i++){
+			archivo << i+1 << "\t\t" << esf(i) << "\n";
+		}
+		archivo.close();
+
+	}
 }
 
 void escribir_resultado(vec datos, string dato){
@@ -30,9 +43,8 @@ void escribir_resultado(vec datos, string dato){
 				archivo << datos(i) << "\n";
 			}
 		}
-
+		archivo.close();
 	}
-
 }
 
 mat eliminar_fila(mat A, int fila) {
@@ -54,4 +66,3 @@ vec eliminar_elemento(vec A, int indice) {
     if (indice == A.n_elem - 1) return A(span(0, A.n_elem - 2));
     return join_cols(A(span(0, indice - 1)), A(span(indice + 1, A.n_elem - 1)));
 }
-

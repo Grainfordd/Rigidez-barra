@@ -59,14 +59,14 @@ int main(void){
 
 			bool cond = cond1 && cond2;
 			if (cond){
-				barras[k].k.insert_rows(i-1, 1);
-				barras[k].k.insert_cols(i-1, 1);
+				barras[k].k_glob.insert_rows(i-1, 1);
+				barras[k].k_glob.insert_cols(i-1, 1);
 			}
 		}
 	}
 
 	for (int i = 0 ; i < num_elementos ; i++){
-		K_global += barras[i].k;
+		K_global += barras[i].k_glob;
 	}
 	
 	double E, A;
@@ -99,6 +99,7 @@ int main(void){
 	// --------------------------------------------------------------------------------
 
 
+	// ---------------------------- Calculo fuerzas y desplazamientos ------------------
 	mat f_read;
 	f_read.load(fuerzas_file);
 
@@ -122,6 +123,35 @@ int main(void){
 	}
 
 	mat F = K_global * disp;
+	// --------------------------------------------------------------------------------
+	// -------------------- Cálculo esfuerzos -----------------------------------------
+	
+
+	vec fuerza_int = zeros(num_elementos);
+
+	for (int i = 0; i < num_elementos ; i++){
+		vec desp_loc = zeros(4);
+		
+		// Primer nodo
+		int j = 2 * barras[i].nodos[0];
+
+		desp_loc(0) = disp(j-2);
+		desp_loc(1) = disp(j-1);
+
+		// Segundo nodo
+
+		j = 2 * barras[i].nodos[1];
+		desp_loc(2) = disp(j-2);
+		desp_loc(3) = disp(j-1);
+
+		double fuerza_loc = barras[i].fuerza_interna(desp_loc);
+		fuerza_int(i) = fuerza_loc;
+	}
+	
+	
+	// --------------------------------------------------------------------------------
+
+
 	cout << "-------- Fuerzas ----------" << endl;
 	F.print();
 	cout << "------------------" << endl;
@@ -130,9 +160,11 @@ int main(void){
 	disp.print();
 	cout << "------------------" << endl;
 
+	cout << "-------- Fuerzas internas----------" << endl;
+	fuerza_int.print();
+	cout << "------------------" << endl;
+
 	escribir_resultado(disp, "disp");
 	escribir_resultado(F, "fuerzas");
-	cout << "Hola\n";
-	cout << "Hola\n";
-
+	escribir_esf(fuerza_int);
 }

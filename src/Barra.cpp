@@ -18,12 +18,17 @@ Barra::Barra(Nodo nodo1, Nodo nodo2) {
         {0, 0, cosx, cosy}
     };
 
-    k = {
+    k_loc = {
         {1, -1},
         {-1, 1}
     };
 
-    k = k / largo;
-    k = T.t() * k * T;
+    k_loc = k_loc / largo;
+    k_glob = T.t() * k_loc * T;
+}
+
+double Barra::fuerza_interna(arma::vec desp){
+	vec fuerza = k_loc * T * desp;
+	return std::abs(fuerza(0));
 }
 
