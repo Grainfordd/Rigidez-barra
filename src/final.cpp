@@ -7,7 +7,6 @@
 using namespace std;
 using namespace arma;
 
-
 int main(void){
 	// ------------------------ Lectura de datos -------------------------------
 
@@ -17,11 +16,7 @@ int main(void){
 	string disp_file = "../data/disp.txt";
 
 
-
-	mat nodos_info;
-	mat elementos_info;
-	nodos_info.load(nodos_file);
-	elementos_info.load(elementos_file);
+    auto [nodos_info, puntos, lineas, nombres] = leerMallaMSH("../data/malla.msh");
 
 	// Asignación de nodos 
 	int num_nodos = nodos_info.n_rows;
@@ -33,25 +28,20 @@ int main(void){
 	}
 
 	// Asignación elementos
-	int num_elementos = elementos_info.n_rows;
+	int num_elementos = lineas.n_rows;
 	Barra barras[num_elementos];
 	for (int i = 0; i < num_elementos ; i++){
-		Nodo nodo1 = nodos[((int)elementos_info.row(i)[0]) - 1];
-		Nodo nodo2 = nodos[((int)elementos_info.row(i)[1]) - 1];
+		Nodo nodo1 = nodos[((int)lineas.row(i)[1]) - 1];
+		Nodo nodo2 = nodos[((int)lineas.row(i)[2]) - 1];
 
-		double E = elementos_info.row(i)[2];
-		double A = elementos_info.row(i)[3];
-		barras[i] = Barra(nodo1, nodo2, E, A);
+		barras[i] = Barra(nodo1, nodo2, 1, 1);
 	}
 	//--------------------------------------------------------------------------
 	
-	mostrar_barras(barras, 2);
+	mostrar_barras(barras, num_elementos);
 
 	int n = num_nodos*2;
-
-
 	mat K_global = zeros(n, n);
-
 
 	// ---------------------------- Ensamblar matriz ----------------------------------
 	for (int k = 0; k < num_elementos; k++){
@@ -67,30 +57,43 @@ int main(void){
 		}
 	}
 
+	/* mostrar_barras(barras, num_elementos); */
 	for (int i = 0 ; i < num_elementos ; i++){
 		K_global += barras[i].k_glob;
 	}
+	K_global.print();
 
 	// ----------------------------------------------------------------------------------
 	
 	// ---------------------------- Reducción matriz global ----------------------------
-	mat nodos_disp;
-	nodos_disp.load(disp_file);
-
-	vec disp = vectorise(nodos_disp.t());
 	mat K_red = K_global;
+	cout << "-----------------------------------------"<< endl;
+	K_global.print();
+	cout << "-----------------------------------------"<< endl;
 
-	for (int i = num_nodos - 1 ; i >= 0 ; i--){
-		int nodo = (i+1);
+	vec disp = ones(n); 
+	int num_cond = puntos.n_rows;
+	// Leo Las condiciones de borde
+	for (int i = 0; i < num_cond ; i++){
+		int tag = puntos.row(i)[1];
+		int nodo = puntos.row(i)[2]; 
 
-		if (nodos_disp(i, 1) == 0) {
-			K_red = eliminar_fila(K_red, nodo*2 - 1);
-			K_red = eliminar_columna(K_red, nodo*2 - 1);
-
+		if (nombres[tag] == "Fijo"){
+			disp[nodo*2 - 2] = 0;
+			disp[nodo*2 - 1] = 0;
 		}
-		if (nodos_disp(i, 0) == 0) {
-			K_red = eliminar_fila(K_red, nodo*2 - 2);
-			K_red = eliminar_columna(K_red, nodo*2 - 2);
+		if (nombres[tag] == "Rod_x") {
+			disp[nodo*2 - 2] = 0;
+		} 
+		if (nombres[tag] == "Rod_y") {
+			disp[nodo*2 - 1] = 0;
+		} 
+	}
+
+	for (int i = n-1 ; i >= 0 ; i--){
+		if (disp[i] == 0){
+			K_red = eliminar_fila(K_red, i);
+			K_red = eliminar_columna(K_red, i);
 		}
 	}
 	// --------------------------------------------------------------------------------
@@ -101,24 +104,16 @@ int main(void){
 	f_read.load(fuerzas_file);
 
 	vec f_red = vectorise(f_read.t());
-	f_red.print();
 	vec disp_red;
 	disp_red = solve(K_red, f_red);
 
 	int k = disp_red.n_elem - 1;
-	for (int i = num_nodos - 1 ; i >= 0 ; i--){
-		int nodo = (i+1);
-		if (nodos_disp(i, 1) == 1) {
-			disp[nodo*2 - 1] = disp_red[k];
-			k--;
-		}
-
-		if (nodos_disp(i, 0) == 1) {
-			disp[nodo*2 - 2] = disp_red[k];
+	for (int i = disp.n_rows-1; i >= 0; i--){
+		if (disp[i] != 0){
+			disp[i] = disp_red[k];
 			k--;
 		}
 	}
-
 	mat F = K_global * disp;
 	// --------------------------------------------------------------------------------
 	// -------------------- Cálculo esfuerzos -----------------------------------------
@@ -169,9 +164,9 @@ int main(void){
 	esfuerzos.print();
 	cout << "------------------" << endl;
 
-
 	escribir_resultado(disp, "disp");
 	escribir_resultado(F, "fuerzas");
 	escribir_esf(esfuerzos);
 	escribir_vtk(nodos, barras, disp, esfuerzos, "resultados.vtk", num_nodos, num_elementos);
 }
+

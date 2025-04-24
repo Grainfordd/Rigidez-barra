@@ -1,6 +1,5 @@
 disp.txt
 nodos.txt
-fuerzas.txt
 elementos.txt
 programa
 src/a.out
@@ -11,3 +10,5 @@ res_disp.txt
 res_fuerzas.txt
 esfuerzos.txt
 resultados.vtk
+a.out
+#fuerzas.txt
